@@ -1,0 +1,33 @@
+name: deploy app-index 🚀
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch: # permite correrlo a mano desde la pestaña Actions
+
+jobs:
+    deploy:
+        name: pull · build · pm2
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: install ssh key
+              run: |
+                  install -m 600 -D /dev/null ~/.ssh/id_rsa
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                  ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+
+            # nvm no está en el PATH de una shell SSH no-interactiva, así que lo cargamos
+            # explícito. La cadena con && aborta si algo falla (no reinicia con build roto).
+            # fetch + reset --keep en vez de pull: si la historia se reescribe (amend,
+            # rebase, force-push) un pull se traba con "divergent branches". --keep mueve
+            # la rama aunque haya divergido, pero aborta en vez de borrar un cambio local
+            # hecho en el servidor. No toca archivos sin versionar: .env y
+            # la BD SQLite van en .gitignore y no se pierden.
+            - name: deploy on droplet
+              run: |
+                  ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use node >/dev/null && { [ -d ~/code/app-index ] || git clone git@github.com:Moibe/app-index.git ~/code/app-index; } && cd ~/code/app-index && git checkout main && git fetch origin main && git reset --keep FETCH_HEAD && npm ci && npm run db:migrate && npm run build && { [ -f .env ] && set -a && . ./.env && set +a || true; } && export PORT="${PORT:-4600}" HOST="${HOST:-127.0.0.1}" && { pm2 delete app-index >/dev/null 2>&1 || true; } && pm2 start build/index.js --name app-index --update-env && pm2 save && sleep 2 && curl -fsS -o /dev/null -w "local http=%{http_code}\n" http://127.0.0.1:4600/'
+
+            - name: cleanup
+              run: rm -rf ~/.ssh
