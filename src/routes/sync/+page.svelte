@@ -10,7 +10,8 @@
   <div>
     <h1 class="titulo">Sincronización</h1>
     <p class="sub">
-      Cada fuente se sincroniza sola una vez al día en el servidor. Si una falla, se conservan sus datos anteriores.
+      Cada fuente se sincroniza sola una vez al día en el servidor; si una falla, se reintenta cada hora y al
+      reiniciar la app. Mientras tanto se conservan sus datos anteriores.
     </p>
   </div>
   <SyncBoton {form} />

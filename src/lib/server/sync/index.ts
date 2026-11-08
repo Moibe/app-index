@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { dnsRecords, doDomains, droplets, ncDomains, routes, syncRuns } from '$lib/server/db/schema';
 import { leerNamecheap } from './namecheap';
@@ -11,6 +11,7 @@ export type Fuente = (typeof FUENTES)[number];
 export type ResultadoSync = { fuente: Fuente; ok: boolean; items: number; mensaje: string | null };
 
 const UN_DIA_MS = 24 * 60 * 60 * 1000;
+const UNA_HORA_MS = 60 * 60 * 1000;
 let corriendo = false;
 
 export const sincronizando = () => corriendo;
@@ -90,34 +91,43 @@ export async function sincronizarSeguro(): Promise<{ ok: boolean; error?: string
 	}
 }
 
-/** Fecha (ms) de la última corrida de cada fuente, sea buena o mala. */
-function ultimaCorrida(): Record<Fuente, number | null> {
-	const filas = db
-		.select({ source: syncRuns.source, ultima: sql<number>`max(${syncRuns.finishedAt})` })
-		.from(syncRuns)
-		.groupBy(syncRuns.source)
-		.all();
-	const out = { namecheap: null, digitalocean: null, servidor: null } as Record<Fuente, number | null>;
-	for (const f of filas) if (f.source in out) out[f.source as Fuente] = f.ultima * 1000;
+/** Última corrida de cada fuente (fecha en ms y si salió bien). */
+function ultimaCorrida(): Record<Fuente, { at: number; ok: boolean } | null> {
+	const filas = db.select().from(syncRuns).orderBy(desc(syncRuns.id)).limit(300).all();
+	const out = { namecheap: null, digitalocean: null, servidor: null } as Record<
+		Fuente,
+		{ at: number; ok: boolean } | null
+	>;
+	for (const f of filas) {
+		if (f.source in out && !out[f.source as Fuente]) {
+			out[f.source as Fuente] = { at: f.finishedAt.getTime(), ok: f.ok };
+		}
+	}
 	return out;
 }
 
 let iniciado = false;
 
 /**
- * Sync automático: cada hora revisa qué fuentes llevan más de 24 h sin correrse y las corre.
- * Una fuente que falla se reintenta al día siguiente (cuenta la última corrida, buena o mala),
- * no cada hora. Se arranca desde hooks.server.ts.
+ * Sync automático. Cada hora revisa qué fuentes tocan: las que salieron bien hace más de 24 h y
+ * las que fallaron hace más de 1 h. Al arrancar la app (p. ej. tras corregir el `.env` y
+ * redesplegar) reintenta además toda fuente que haya fallado, sin esperar. Se arranca desde
+ * hooks.server.ts.
  */
 export function iniciarProgramador() {
 	if (iniciado) return;
 	iniciado = true;
-	const revisar = async () => {
+	const revisar = async (alArrancar = false) => {
 		if (corriendo) return;
 		const ultima = ultimaCorrida();
-		const pendientes = FUENTES.filter((f) => !ultima[f] || Date.now() - ultima[f]! > UN_DIA_MS);
+		const pendientes = FUENTES.filter((f) => {
+			const u = ultima[f];
+			if (!u) return true;
+			const edad = Date.now() - u.at;
+			return u.ok ? edad > UN_DIA_MS : alArrancar || edad > UNA_HORA_MS;
+		});
 		if (pendientes.length) await sincronizar(pendientes).catch((e) => console.error('[sync]', e));
 	};
-	setTimeout(revisar, 15_000);
-	setInterval(revisar, 60 * 60 * 1000).unref();
+	setTimeout(() => revisar(true), 15_000);
+	setInterval(() => revisar(), 60 * 60 * 1000).unref();
 }

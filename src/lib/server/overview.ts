@@ -229,10 +229,9 @@ export function getOverview() {
 			archivosAvisados.add(r.archivo);
 			alerta('alta', dom, `symlink:${r.archivo}`, `${r.archivo}: nginx no lo carga`, 'El archivo está en nx-routes pero falta el symlink en sites-enabled.');
 		}
-		for (const x of r.destinos) {
-			if (x.listening === false) {
-				alerta('alta', dom, `escucha:${r.host}:${x.port}`, `${r.host}: nada escucha en el puerto ${x.port}`, 'Probable 502: la app no está corriendo en ese puerto.');
-			}
+		const caidos = r.destinos.filter((x) => x.listening === false).map((x) => x.port);
+		if (caidos.length) {
+			alerta('alta', dom, `escucha:${r.host}`, `${r.host}: nada escucha en ${caidos.length > 1 ? 'los puertos' : 'el puerto'} ${caidos.join(', ')}`, 'Probable 502: la app no está corriendo ahí.');
 		}
 		if (r.dns === 'sin-registro') alerta('media', dom, `dns:${r.host}`, `${r.host}: sin registro DNS`, 'Hay ruta en nginx, pero el DNS vigente del dominio no tiene registro A/CNAME para este host.');
 		if (r.dns === 'ajena') alerta('media', dom, `dns:${r.host}`, `${r.host}: el DNS apunta a otra IP`, 'Su registro A no coincide con ninguna IP de tus droplets.');
