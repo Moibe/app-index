@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import ThOrden from '$lib/ThOrden.svelte';
+  import AbrirFuera from '$lib/AbrirFuera.svelte';
   import { alternar, ordenar, type Orden } from '$lib/orden';
 
   let { data }: { data: PageData } = $props();
@@ -91,7 +92,7 @@
           <tr>
             <td>{r.dominio ?? '(dominio desconocido)'}</td>
             <td>
-              <b>{r.host}</b>
+              <b>{r.host}</b>{#if !r.host.includes('*')}<AbrirFuera host={r.host} />{/if}
               {#if r.aliases.length}<br /><span class="mute mono">{r.aliases.join(' ')}</span>{/if}
             </td>
             <td>{#if apps.length}{apps.join(', ')}{:else}<span class="mute">—</span>{/if}</td>

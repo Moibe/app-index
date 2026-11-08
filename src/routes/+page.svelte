@@ -2,6 +2,7 @@
   import type { ActionData, PageData } from './$types';
   import SyncBoton from '$lib/SyncBoton.svelte';
   import ThOrden from '$lib/ThOrden.svelte';
+  import AbrirFuera from '$lib/AbrirFuera.svelte';
   import { claseVence, etiquetaDns, fechaCorta, haceTiempo, textoVence } from '$lib/formato';
   import { alternar, ordenar, type Orden } from '$lib/orden';
 
@@ -79,7 +80,7 @@
       <tbody>
         {#each filas as d (d.name)}
           <tr>
-            <td><b>{d.name}</b>{#if !d.inNamecheap} <span class="chip nada" title="No está registrado en Namecheap">otro registrador</span>{/if}</td>
+            <td><b>{d.name}</b><AbrirFuera host={d.name} />{#if !d.inNamecheap} <span class="chip nada" title="No está registrado en Namecheap">otro registrador</span>{/if}</td>
             <td>
               {#if d.expires}
                 {fechaCorta(d.expires)}
