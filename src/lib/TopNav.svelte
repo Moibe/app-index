@@ -22,9 +22,10 @@
 
   // Edita estos items por las secciones reales de tu app.
   const items = [
-    { href: '/', label: 'Inicio' },
-    { href: '/seccion-dos', label: 'Sección dos' },
-    { href: '/seccion-tres', label: 'Sección tres' }
+    { href: '/', label: 'Dominios' },
+    { href: '/mapa', label: 'Apps ↔ Dominios' },
+    { href: '/alertas', label: 'Alertas' },
+    { href: '/sync', label: 'Sincronización' }
   ];
 </script>
 
@@ -48,6 +49,10 @@
       </a>
     {/each}
   </nav>
+
+  <form method="POST" action="/logout" class="salir">
+    <button type="submit">Salir</button>
+  </form>
 </header>
 
 <style>
@@ -146,6 +151,25 @@
   }
   .nav-item[aria-current='page'] .nav-ico {
     background: var(--vivo);
+  }
+
+  .salir {
+    margin: 0 0 0 auto;
+  }
+  .salir button {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(65, 105, 225, 0.35);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--tinta);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+  }
+  .salir button:hover {
+    background: var(--vivo-suave);
+    border-color: var(--vivo);
   }
 
   /* En pantallas chicas: solo íconos (oculta texto y título) para que no se desborde. */

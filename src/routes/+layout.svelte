@@ -5,11 +5,14 @@
   import type { Snippet } from 'svelte';
   import favicon from '$lib/assets/favicon.svg';
   import { afterNavigate } from '$app/navigation';
+  import { page } from '$app/state';
   import TopNav from '$lib/TopNav.svelte';
   import Sidebar from '$lib/Sidebar.svelte';
 
   let { children }: { children: Snippet } = $props();
   let collapsed = $state(false);
+  // /login va sin barras: solo la tarjeta sobre el gradiente.
+  const conMarco = $derived(page.url.pathname !== '/login');
 
   // En móvil el sidebar flota encima del contenido (ver @media abajo y en Sidebar.svelte):
   // arranca replegado y se vuelve a replegar en cada navegación para no tapar la página.
@@ -38,13 +41,17 @@
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-<TopNav />
-<Sidebar {collapsed} {toggleCollapsed} />
-<main class={collapsed ? 'collapsed' : ''}>
-  <div class="work-scroll">
-    {@render children()}
-  </div>
-</main>
+{#if conMarco}
+  <TopNav />
+  <Sidebar {collapsed} {toggleCollapsed} />
+  <main class={collapsed ? 'collapsed' : ''}>
+    <div class="work-scroll">
+      {@render children()}
+    </div>
+  </main>
+{:else}
+  {@render children()}
+{/if}
 
 <style>
   :global(:root) {
@@ -139,5 +146,132 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 16px;
+  }
+
+  /* ---- Piezas compartidas por las páginas (tablas, chips, tarjetas, botón) ---- */
+  :global(.titulo) {
+    margin: 0 0 0.2rem;
+    font-size: 1.35rem;
+    font-weight: 650;
+  }
+  :global(.sub) {
+    margin: 0 0 1rem;
+    color: var(--tinta-suave);
+    font-size: 0.9rem;
+  }
+  :global(.fila-titulo) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  :global(.tiles) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin: 0.5rem 0 1.25rem;
+  }
+  :global(.tile) {
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid rgba(65, 105, 225, 0.3);
+    background: rgba(255, 255, 255, 0.7);
+  }
+  :global(.tile b) {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  :global(.tile span) {
+    color: var(--tinta-suave);
+    font-size: 0.8rem;
+  }
+  :global(.tabla-wrap) {
+    overflow-x: auto;
+    border: 1px solid rgba(65, 105, 225, 0.25);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.55);
+  }
+  :global(.tabla) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+  :global(.tabla th) {
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--tinta-suave);
+    border-bottom: 1px solid var(--vivo-borde);
+  }
+  :global(.tabla td) {
+    padding: 0.5rem 0.7rem;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(65, 105, 225, 0.14);
+  }
+  :global(.tabla tr:last-child td) {
+    border-bottom: 0;
+  }
+  :global(.mono) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82em;
+  }
+  :global(.mute) {
+    color: var(--tinta-suave);
+  }
+  :global(.chip) {
+    display: inline-block;
+    padding: 0.08rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  :global(.chip.ok) {
+    background: #dcfce7;
+    color: #14532d;
+    border-color: #86efac;
+  }
+  :global(.chip.warn) {
+    background: #fef3c7;
+    color: #78350f;
+    border-color: #fcd34d;
+  }
+  :global(.chip.bad) {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-color: #fca5a5;
+  }
+  :global(.chip.info) {
+    background: var(--vivo-suave);
+    color: var(--tinta);
+    border-color: var(--vivo-borde);
+  }
+  :global(.chip.nada) {
+    background: #f4f4f5;
+    color: #52525b;
+    border-color: #e4e4e7;
+  }
+  :global(.btn) {
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--vivo);
+    background: var(--vivo);
+    color: #fff;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  :global(.btn:disabled) {
+    opacity: 0.7;
+    cursor: progress;
+  }
+  :global(.vacio) {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--tinta-suave);
   }
 </style>

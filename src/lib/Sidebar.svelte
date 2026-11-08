@@ -3,6 +3,15 @@
   // para replegar/mostrar. Publica su ancho real a la variable CSS --sidebar-width
   // para que el panel de contenido se ajuste solo. Items de ejemplo: reemplázalos.
   // Tema claro: los colores salen de las variables --tinta/--vivo/--vidrio del layout.
+  import { page } from '$app/state';
+
+  const items = [
+    { href: '/', label: 'Dominios' },
+    { href: '/mapa', label: 'Apps ↔ Dominios' },
+    { href: '/alertas', label: 'Alertas' },
+    { href: '/sync', label: 'Sincronización' }
+  ];
+
   let {
     collapsed = false,
     toggleCollapsed
@@ -50,18 +59,12 @@
     onmouseleave={handleLeave}
   >
     <nav>
-      <a href="/" class="nav-item" aria-current="page">
-        <span class="nav-ico" aria-hidden="true"></span>
-        <span>Sección uno</span>
-      </a>
-      <a href="/seccion-dos" class="nav-item">
-        <span class="nav-ico" aria-hidden="true"></span>
-        <span>Sección dos</span>
-      </a>
-      <a href="/seccion-tres" class="nav-item">
-        <span class="nav-ico" aria-hidden="true"></span>
-        <span>Sección tres</span>
-      </a>
+      {#each items as it (it.href)}
+        <a href={it.href} class="nav-item" aria-current={page.url.pathname === it.href ? 'page' : undefined}>
+          <span class="nav-ico" aria-hidden="true"></span>
+          <span>{it.label}</span>
+        </a>
+      {/each}
     </nav>
 
     <div class="sidebar-footer">
