@@ -69,11 +69,11 @@
         <tr>
           <ThOrden clave="dominio" etiqueta="Dominio" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="vence" etiqueta="Vence" {orden} alOrdenar={ordenarPor} />
+          <ThOrden clave="apps" etiqueta="Apps" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="autoRenew" etiqueta="Auto-renew" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="dnsEn" etiqueta="DNS en" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="enDo" etiqueta="En DO" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="droplet" etiqueta="Apunta al droplet" {orden} alOrdenar={ordenarPor} />
-          <ThOrden clave="apps" etiqueta="Apps" {orden} alOrdenar={ordenarPor} />
           <ThOrden clave="alertas" etiqueta="Alertas" {orden} alOrdenar={ordenarPor} />
         </tr>
       </thead>
@@ -85,6 +85,12 @@
               {#if d.expires}
                 {fechaCorta(d.expires)}
                 <span class="chip {claseVence(d.daysLeft)}">{textoVence(d.daysLeft)}</span>
+              {:else}<span class="mute">—</span>{/if}
+            </td>
+            <td>
+              {#if d.hosts.length}
+                {d.hosts.length} {d.hosts.length === 1 ? 'host' : 'hosts'}
+                {#if d.apps.length}<span class="mute mono">{d.apps.join(', ')}</span>{/if}
               {:else}<span class="mute">—</span>{/if}
             </td>
             <td>
@@ -101,12 +107,6 @@
               {#if d.apuntaAlDroplet === null}<span class="mute">—</span>
               {:else if d.apuntaAlDroplet}<span class="chip ok">sí</span>
               {:else}<span class="chip nada">no</span>{/if}
-            </td>
-            <td>
-              {#if d.hosts.length}
-                {d.hosts.length} {d.hosts.length === 1 ? 'host' : 'hosts'}
-                {#if d.apps.length}<span class="mute mono">{d.apps.join(', ')}</span>{/if}
-              {:else}<span class="mute">—</span>{/if}
             </td>
             <td>
               {#if d.alertas}<a href="/alertas#{d.name}"><span class="chip warn">{d.alertas}</span></a>
