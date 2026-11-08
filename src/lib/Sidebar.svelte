@@ -1,16 +1,14 @@
 <script lang="ts">
   // Barra lateral "de vidrio" con el mismo tilt 3D que la superior. Incluye el handle
   // para replegar/mostrar. Publica su ancho real a la variable CSS --sidebar-width
-  // para que el panel de contenido se ajuste solo. Items de ejemplo: reemplázalos.
+  // para que el panel de contenido se ajuste solo.
   // Tema claro: los colores salen de las variables --tinta/--vivo/--vidrio del layout.
   import { page } from '$app/state';
 
-  const items = [
-    { href: '/', label: 'Dominios' },
-    { href: '/mapa', label: 'Apps ↔ Dominios' },
-    { href: '/alertas', label: 'Alertas' },
-    { href: '/sync', label: 'Sincronización' }
-  ];
+  // Vacía a propósito: aquí irán los menús propios de la barra lateral. Las secciones
+  // principales (Dominios, Apps ↔ Dominios, Alertas, Sincronización) viven en la TopNav.
+  // Para agregar uno: { href: '/ruta', label: 'Nombre' }.
+  const items: { href: string; label: string }[] = [];
 
   let {
     collapsed = false,
