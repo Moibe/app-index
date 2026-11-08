@@ -1,6 +1,7 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { dnsRecords, doDomains, droplets, ncDomains, routes, syncRuns } from '$lib/server/db/schema';
+import { avisarVencimientos } from '$lib/server/notificar';
 import { leerNamecheap } from './namecheap';
 import { leerDigitalOcean } from './digitalocean';
 import { leerServidor } from './servidor';
@@ -61,6 +62,18 @@ async function ejecutar(fuente: Fuente): Promise<ResultadoSync> {
 	} catch (e) {
 		ok = false;
 		mensaje = e instanceof Error ? e.message : String(e);
+	}
+
+	// Avisos de vencimiento: corren aunque el sync haya fallado, porque las fechas guardadas siguen
+	// siendo válidas (una API caída varios días no debe silenciar un vencimiento). Que ntfy falle no
+	// cambia el resultado del sync: queda anotado en el detalle y se reintenta en el siguiente.
+	if (fuente === 'namecheap') {
+		try {
+			const aviso = await avisarVencimientos();
+			if (aviso) mensaje = [mensaje, aviso].filter(Boolean).join(' · ');
+		} catch (e) {
+			mensaje = [mensaje, `ntfy falló: ${e instanceof Error ? e.message : e}`].filter(Boolean).join(' · ');
+		}
 	}
 
 	db.insert(syncRuns).values({ source: fuente, startedAt: inicio, finishedAt: new Date(), ok, items, message: mensaje }).run();

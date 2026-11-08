@@ -60,6 +60,12 @@ export const routes = sqliteTable('routes', {
 	app: text('app')
 });
 
+/** Avisos de ntfy ya enviados (para no repetirlos). La clave incluye dominio, vencimiento y umbral. */
+export const notificaciones = sqliteTable('notificaciones', {
+	clave: text('clave').primaryKey(),
+	enviada: integer('enviada', { mode: 'timestamp' }).notNull()
+});
+
 /** Bitácora de sincronizaciones, una fila por fuente y corrida. */
 export const syncRuns = sqliteTable('sync_runs', {
 	id: integer('id').primaryKey({ autoIncrement: true }),

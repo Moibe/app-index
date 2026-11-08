@@ -6,7 +6,7 @@
   type Resultado = { fuente: string; ok: boolean; items: number; mensaje: string | null };
   let {
     form
-  }: { form?: { ok?: boolean; error?: string; resultados?: Resultado[] } | null } = $props();
+  }: { form?: { ok?: boolean; error?: string; resultados?: Resultado[]; ntfy?: boolean } | null } = $props();
 
   let sincronizando = $state(false);
 </script>
@@ -26,7 +26,9 @@
   <button class="btn" type="submit" disabled={sincronizando}>
     {sincronizando ? 'Sincronizando… (puede tardar ~20 s)' : 'Sincronizar ahora'}
   </button>
-  {#if form?.error}
+  {#if form?.ntfy}
+    <!-- resultado de la prueba de ntfy: lo muestra la página, no este botón -->
+  {:else if form?.error}
     <p class="msg bad">{form.error}</p>
   {:else if form?.resultados}
     <ul class="msg">

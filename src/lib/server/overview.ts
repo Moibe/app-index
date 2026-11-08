@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { dnsRecords, doDomains, droplets, ncDomains, routes, syncRuns } from '$lib/server/db/schema';
 import { FUENTES, type Fuente } from '$lib/server/sync';
+import { diasHasta } from './avisos';
 
 // Cruza las tres fuentes por nombre de dominio y calcula las alertas. Todo lo que devuelve es
 // JSON plano (strings, números, booleanos) para pasarlo tal cual a las páginas.
@@ -50,13 +51,6 @@ const json = (s: string): string[] => {
 		return [];
 	}
 };
-
-function diasHasta(iso: string | null): number | null {
-	if (!iso) return null;
-	const hoy = new Date();
-	const hoyUtc = Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-	return Math.round((Date.parse(`${iso}T00:00:00Z`) - hoyUtc) / 86_400_000);
-}
 
 export function getOverview() {
 	const nc = db.select().from(ncDomains).all();

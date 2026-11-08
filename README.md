@@ -20,6 +20,10 @@ En producción: <https://app-index.moibe.me> (droplet `gradioFish`, puerto 4600,
 - El `ApiKey` de Namecheap **no tiene modo solo-lectura**: puede renovar, cambiar DNS y transferir. Vive solo en el `.env`, y el sitio exige login (`ADMIN_PASSWORD`).
 - El token de DigitalOcean sí es de solo lectura.
 
+## Avisos por ntfy
+
+Si hay `NTFY_TOPIC` en el `.env`, después de cada sync de Namecheap se avisa de los dominios que cruzaron 60, 30 o 7 días antes de vencer, y de los vencidos. Un solo mensaje por corrida, una sola vez por dominio y fecha de vencimiento (al renovar, se rearman). Prioridad alta si queda una semana o menos, o si queda un mes y no tiene auto-renew. La página de Sincronización trae un botón de prueba. La lógica está en `src/lib/server/avisos.ts` (función pura) y el envío en `notificar.ts`.
+
 ## Local
 
 ```bash

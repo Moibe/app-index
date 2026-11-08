@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
   import SyncBoton from '$lib/SyncBoton.svelte';
   import { fechaHora, haceTiempo, nombreFuente } from '$lib/formato';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  let probando = $state(false);
 </script>
 
 <div class="fila-titulo">
@@ -28,6 +30,39 @@
       <span>{nombreFuente[fuente]}{#if u} · {haceTiempo(u.at)}{/if}</span>
     </div>
   {/each}
+</div>
+
+<div class="avisos">
+  <p class="sub">
+    Avisos de vencimiento por ntfy:
+    {#if data.ntfyActivo}
+      <span class="chip ok">activados</span> a 60, 30 y 7 días del vencimiento, y al vencer. Una sola vez por dominio
+      y fecha: si renuevas, se rearman solos.
+    {:else}
+      <span class="chip nada">apagados</span> falta <span class="mono">NTFY_TOPIC</span> en el
+      <span class="mono">.env</span> del servidor.
+    {/if}
+  </p>
+  {#if data.ntfyActivo}
+    <form
+      method="POST"
+      action="?/ntfy"
+      use:enhance={() => {
+        probando = true;
+        return async ({ update }) => {
+          await update({ reset: false });
+          probando = false;
+        };
+      }}
+    >
+      <button class="btn" type="submit" disabled={probando}>
+        {probando ? 'Enviando…' : 'Enviar aviso de prueba'}
+      </button>
+      {#if form?.ntfy}
+        <span class="chip {form.ok ? 'ok' : 'bad'}">{form.ok ? 'enviado: revisa tu celular' : form.error}</span>
+      {/if}
+    </form>
+  {/if}
 </div>
 
 {#if data.ips.length}
